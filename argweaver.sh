@@ -22,7 +22,7 @@ arg-sample -s 20Ksnps_wTSR_WH.sites -N 500000 -r 7e-9 -m 1.8e-8 --ntimes 20 --ma
 #convert smc file to bed
 for i in {1..500}
 do
-smc2bed reruns/20Ksnps_c1_t20_n500.${i}.smc.gz | gzip > reruns/20Ksnps_c1_t20_n500.${i}.bed.gz
+smc2bed reruns/20Ksnps_c1_t20_n500.${i}.smc.gz > reruns/20Ksnps_c1_t20_n500.${i}.bed.gz
 done
 
 #merge MCMC samples
