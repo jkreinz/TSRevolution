@@ -40,10 +40,27 @@ arg-summarize -a 20Ksnps_c1_t50_n500.allsamples.sorted.bed.gz --region chr11:239
 #first keep just last 200 samples
 zcat 20Ksnps_c1_t50_n500.allsamples.sorted.bed.gz | awk '$4 > 290' | bgzip > 20Ksnps_c1_t50_n500.after300.sorted.bed.gz
 
-arg-summarize -a 20Ksnps_c1_t50_n500.allsamples.sorted.bed.g --snp-file finalsnps_forstats.bed.gz -A -T -Q 0.05,0.95 #allelic age and time to the most recent common ancestor for each locus
 
-#subset for each origin, list of sample names for each origin from tree clusters
-for i in als574_1 als574_2 als574_3 als574_4 als574_5 als574_6 als653_7 als653_8 PPO_9 PPO_10 PPO_11
-do
-arg-summarize -a 20Ksnps_c1_t50_n500.allsamples.sorted.bed.g --subset ${i} -A -T -Q 0.05,0.95 > ${i}.stats
+#REDOING
+#make snps file
+cat <(head -n+1 Scaffold_11_missing10p_w653_PPOrealdel_whatshap_shapeit4_WH.sites) <(grep "23999751" Scaffold_11_missing10p_w653_PPOrealdel_whatshap_shapeit4_WH.sites | sed 's/^/chr11\t23999750\t/g') <(grep "24249814" Scaffold_11_missing10p_w653_PPOrealdel_whatshap_shapeit4_WH.sites | sed 's/^/chr11\t24249813\t/g')  <(grep "24250051" Scaffold_11_missing10p_w653_PPOrealdel_whatshap_shapeit4_WH.sites | sed 's/^/chr11\t24250050\t/g') > finalsnps_forstats.bed 
+
+#compile all MCMC samples
+for i in `seq 0 10 680`
+do 
+zcat 20Ksnps_whatshap_shapeit4_c1_t30_r8.${i}.bed.gz >> 20Ksnps_whatshap_shapeit4_c1_t30_r8.allsamples.bed
+sort -nk2,2 -nk4,4 -T ./ 20Ksnps_whatshap_shapeit4_c1_t30_r8.allsamples.bed | bgzip > 20Ksnps_whatshap_shapeit4_c1_t30_r8.allsamples.bed.gz
 done
+
+#change to tab delimited
+zcat argweaver/20Ksnps_whatshap_shapeit4_c1_t30_r8.allsamples.bed.gz | awk -F " " '{print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5}' | bgzip > 20Ksnps_whatshap_shapeit4_c1_t30_r8.allsamples.tab.bed.gz
+
+#make sure that origin subsets also contain susceptible individuals, or else will error out
+#get allele ages by origin by mutation
+for i in ALS574_1sus ALS574_2sus ALS574_3sus ALS653_1sus ALS653_2sus PPO_1sus PPO_2sus
+do 
+arg-summarize -a 20Ksnps_whatshap_shapeit4_c1_t30_r8.allsamples.tab.bed.gz -A -T --snp-file finalsnps_forstats.bed.gz --subset vis_haps/${i} -M -Q 0.05,0.95 > vis_haps/${i}.alleleages
+done
+
+#arg-summarize -a 20Ksnps_c1_t50_n500.allsamples.sorted.bed.g --snp-file finalsnps_forstats.bed.gz -A -T -Q 0.05,0.95 #allelic age and time to the most recent common ancestor for each locus
+
